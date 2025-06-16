@@ -1,57 +1,94 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Container, Typography, TextField, Button, Box, Card } from "@mui/material";
+import { useNavigate, Link } from "react-router-dom";
+import { Container, Typography, TextField, Button, Box, Card, Alert, CircularProgress } from "@mui/material";
+import { useAuth } from "../controllers/useAuth";
 
-export default function Login({ setIsAuth }) {
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
+export default function Login() {
+  const [form, setForm] = useState({ email: "", senha: "" });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [welcome, setWelcome] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleLogin = (e) => {
+  const handleChange = e => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setError("");
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Mock: login válido se email termina com @sleek.com
-    if (email.endsWith("@sleek.com") && senha.length >= 4) {
-      setIsAuth(true);
-      navigate("/dashboard");
-    } else {
-      setError("E-mail ou senha inválidos (dica: use um email @sleek.com e qualquer senha).");
+    setLoading(true);
+    setError("");
+    setWelcome("");
+    try {
+      const result = await login(form.email, form.senha);
+      if (result.success) {
+        setWelcome(`Bem-vindo(a), ${result.user.nome}!`);
+        setTimeout(() => {
+          if (result.user.tipo === "empregador") {
+            navigate("/dashboard-empregador");
+          } else {
+            navigate("/dashboard-candidato");
+          }
+        }, 1200);
+      } else {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError("Ocorreu um erro inesperado ao tentar fazer login.");
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Box sx={{
-      minHeight: "60vh",
-      background: "linear-gradient(135deg, #f7f8fc 70%, #e0c3fc 100%)",
-      py: 8
-    }}>
+    <Box sx={{ minHeight: "100vh", background: "linear-gradient(135deg, #f7f8fc 70%, #e0c3fc 100%)", py: 8 }}>
       <Container maxWidth="sm">
         <Card sx={{ p: 4, borderRadius: 4, boxShadow: "0 8px 32px #0001" }}>
-          <Typography variant="h4" gutterBottom>Login do Empregador</Typography>
+          <Typography variant="h4" gutterBottom>Login</Typography>
           <form onSubmit={handleLogin}>
             <TextField
               label="E-mail"
+              name="email"
               type="email"
               fullWidth
               margin="normal"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+              value={form.email}
+              onChange={handleChange}
+              required
+              autoFocus
             />
             <TextField
               label="Senha"
+              name="senha"
               type="password"
               fullWidth
               margin="normal"
-              value={senha}
-              onChange={e => setSenha(e.target.value)}
+              value={form.senha}
+              onChange={handleChange}
+              required
             />
-            {error && (
-              <Typography color="error" sx={{ mt: 1 }}>{error}</Typography>
-            )}
-            <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
-              Entrar
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{ mt: 2, fontWeight: 700 }}
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={24} color="inherit" /> : "Entrar"}
             </Button>
           </form>
+          {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+          {welcome && <Alert severity="success" sx={{ mt: 2 }}>{welcome}</Alert>}
+          <Typography sx={{ mt: 3, textAlign: 'center', fontSize: 15 }}>
+            Não tem uma conta?{" "}
+            <Link to="/cadastro" style={{ color: '#6610f2', fontWeight: 700, textDecoration: 'none' }}>
+              Cadastre-se
+            </Link>
+          </Typography>
         </Card>
       </Container>
     </Box>

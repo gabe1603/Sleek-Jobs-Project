@@ -1,8 +1,23 @@
 import React from "react";
 import { AppBar, Toolbar, Typography, Button, Box, Avatar } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../controllers/useAuth";
 
 export default function Header() {
+  const navigate = useNavigate();
+  const { isAuth, userType, logout } = useAuth();
+
+  let dashboardRoute = "";
+  if (isAuth) {
+    if (userType === "empregador") dashboardRoute = "/dashboard-empregador";
+    else if (userType === "candidato") dashboardRoute = "/dashboard-candidato";
+  }
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
   return (
     <AppBar
       position="sticky"
@@ -44,8 +59,25 @@ export default function Header() {
           alignItems: 'center',
           gap: 3,
         }}>
+          {isAuth && dashboardRoute && (
+            <Button
+              color="primary"
+              component={Link}
+              to={dashboardRoute}
+              sx={{
+                fontWeight: 600,
+                fontSize: 18,
+                mr: 1
+              }}
+            >
+              DASHBOARD
+            </Button>
+          )}
           <Button color="primary" component={Link} to="/" sx={{ fontWeight: 600, fontSize: 18 }}>
             VAGAS
+          </Button>
+          <Button color="primary" component={Link} to="/empresas" sx={{ fontWeight: 600, fontSize: 18 }}>
+            EMPRESAS
           </Button>
           <Button color="primary" component={Link} to="/stats" sx={{ fontWeight: 600, fontSize: 18 }}>
             ESTATÍSTICAS
@@ -55,27 +87,65 @@ export default function Header() {
           </Button>
         </Box>
 
-        {/* Área do Empregador à direita */}
+        {/* Autenticação à direita */}
         <Box sx={{
           flex: 1,
           display: 'flex',
-          justifyContent: 'flex-end'
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          gap: 2
         }}>
-          <Button
-            variant="contained"
-            color="primary"
-            component={Link}
-            to="/login"
-            sx={{
-              borderRadius: 8,
-              fontWeight: 700,
-              px: 2.5,
-              fontSize: 16,
-              background: "linear-gradient(90deg,#6610f2,#17c3b2)"
-            }}
-          >
-            ÁREA DO EMPREGADOR
-          </Button>
+          {isAuth ? (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleLogout}
+              sx={{
+                fontWeight: 700,
+                fontSize: 16,
+                borderRadius: 8,
+                px: 2.5,
+                background: "linear-gradient(90deg,#6610f2,#17c3b2)",
+                textTransform: 'none'
+              }}
+            >
+              Logout
+            </Button>
+          ) : (
+            <>
+              <Button
+                color="primary"
+                component={Link}
+                to="/login"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: 16,
+                  borderRadius: 8,
+                  px: 2.5,
+                  textTransform: 'none',
+                  mr: { xs: 0, md: 1 }
+                }}
+              >
+                Login
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                component={Link}
+                to="/cadastro"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: 16,
+                  borderRadius: 8,
+                  px: 2.5,
+                  background: "linear-gradient(90deg,#6610f2,#17c3b2)",
+                  textTransform: 'none'
+                }}
+              >
+                Cadastre-se
+              </Button>
+            </>
+          )}
         </Box>
       </Toolbar>
     </AppBar>
