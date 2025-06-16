@@ -14,7 +14,8 @@ export const useJobs = () => {
       const fetchedJobs = await jobService.getJobs(filters);
       setJobs(fetchedJobs);
     } catch (err) {
-      setError(err.message);
+      console.error("Erro ao buscar vagas em useJobs:", err);
+      setError(err.message || "Erro ao carregar vagas.");
     } finally {
       setLoading(false);
     }

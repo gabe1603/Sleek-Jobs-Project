@@ -1,12 +1,34 @@
 import React from "react";
 import { Container, Typography, Grid, Card, CardContent, Avatar, Box, Chip, Button } from "@mui/material";
 import { Link } from "react-router-dom";
-import { empresas } from '../mock/empresas';
+import { useCompanies } from "../controllers/useCompanies";
+import { useAuth } from "../controllers/useAuth";
 
 export default function Empresas() {
-  const empresasIds = JSON.parse(localStorage.getItem("empresasIds") || "[]");
-  const isEmpregador = localStorage.getItem("userType") === "empregador";
-  const minhasEmpresas = empresas.filter(e => empresasIds.includes(e.id));
+  const { companies, loading, error } = useCompanies();
+  const { userType, empresasIds } = useAuth();
+  const isEmpregador = userType === "empregador";
+  const minhasEmpresas = companies.filter(e => empresasIds.includes(e.id));
+
+  if (loading) {
+    return (
+      <Box sx={{ minHeight: "100vh", background: "linear-gradient(135deg, #f7f8fc 70%, #e0c3fc 100%)", py: 8 }}>
+        <Container maxWidth="lg">
+          <Typography>Carregando empresas...</Typography>
+        </Container>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ minHeight: "100vh", background: "linear-gradient(135deg, #f7f8fc 70%, #e0c3fc 100%)", py: 8 }}>
+        <Container maxWidth="lg">
+          <Typography color="error">Erro ao carregar empresas: {error}</Typography>
+        </Container>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ minHeight: "100vh", background: "linear-gradient(135deg, #f7f8fc 70%, #e0c3fc 100%)", py: 8 }}>
@@ -14,6 +36,7 @@ export default function Empresas() {
         <Typography variant="h4" sx={{ fontWeight: 700, color: "#222", mb: 4 }}>
           Empresas que ofertam vagas
         </Typography>
+        
         {isEmpregador && (
           <Card sx={{ p: 3, borderRadius: 4, mb: 4, boxShadow: "0 2px 12px #6610f222" }}>
             <Typography variant="h6" sx={{ fontWeight: 700, color: "#6610f2", mb: 2 }}>
@@ -38,19 +61,21 @@ export default function Empresas() {
             )}
           </Card>
         )}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+        
+        {isEmpregador && (
           <Button
             variant="contained"
             color="primary"
             component={Link}
             to="/cadastrar-empresa"
-            sx={{ fontWeight: 700, borderRadius: 3, background: "linear-gradient(90deg,#6610f2,#17c3b2)", textTransform: 'none' }}
+            sx={{ fontWeight: 700, borderRadius: 3, background: "linear-gradient(90deg,#6610f2,#17c3b2)", textTransform: 'none', mb: 4 }}
           >
             Cadastrar Empresa
           </Button>
-        </Box>
+        )}
+
         <Grid container spacing={4}>
-          {empresas.map(emp => (
+          {companies.map(emp => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={emp.id}>
               <Card sx={{ p: 3, borderRadius: 4, boxShadow: "0 4px 18px #0001", display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: 260 }}>
                 <Avatar src={emp.logo} alt={emp.nome} sx={{ width: 70, height: 70, mb: 2, border: "2px solid #17c3b2" }} />

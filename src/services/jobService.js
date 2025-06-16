@@ -1,4 +1,5 @@
 import { jobs } from "../mock/jobs";
+import { empresas } from "../mock/empresas";
 import { validateJob } from "../models/Job";
 
 class JobServiceError extends Error {
@@ -71,7 +72,12 @@ const jobService = {
             filteredJobs = filteredJobs.filter(job => job.status === filters.status);
           }
 
-          resolve(filteredJobs);
+          const jobsWithCompanyLogos = filteredJobs.map(job => {
+            const company = empresas.find(emp => emp.nome === job.empresa);
+            return { ...job, imagem: company ? company.logo : job.imagem };
+          });
+
+          resolve(jobsWithCompanyLogos);
         }, 300);
       });
     } catch (error) {
@@ -85,7 +91,8 @@ const jobService = {
         setTimeout(() => {
           const job = jobs.find(j => j.id === Number(id));
           if (job) {
-            resolve(job);
+            const company = empresas.find(emp => emp.nome === job.empresa);
+            resolve({ ...job, imagem: company ? company.logo : job.imagem });
           } else {
             reject(new JobServiceError("Vaga não encontrada.", "NOT_FOUND"));
           }

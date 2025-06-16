@@ -23,15 +23,16 @@ export default function Login() {
     setWelcome("");
     try {
       const result = await login(form.email, form.senha);
+      console.log(result)
       if (result.success) {
         setWelcome(`Bem-vindo(a), ${result.user.nome}!`);
-        setTimeout(() => {
-          if (result.user.tipo === "empregador") {
-            navigate("/dashboard-empregador");
-          } else {
-            navigate("/dashboard-candidato");
-          }
-        }, 1200);
+        if (result.user.tipo === "empregador") {
+          navigate("/");
+        } else if (result.user.tipo === "candidato") {
+          navigate("/");
+        } else {
+          navigate("/");
+        }
       } else {
         setError(result.error);
       }

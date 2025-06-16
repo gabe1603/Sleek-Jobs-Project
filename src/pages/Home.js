@@ -1,31 +1,33 @@
 import React, { useState, useEffect } from "react";
-import { jobs } from "../mock/jobs";
+import { useJobs } from "../controllers/useJobs";
 import {
-  Container, Card, CardContent, Typography, Avatar, Box, Button, TextField, InputAdornment, Chip
+  Container, Card, CardContent, Typography, Avatar, Box, Button, TextField, InputAdornment, Chip, CircularProgress, Alert
 } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 
 export default function Home() {
-  const [selectedJob, setSelectedJob] = useState(jobs[0] || null);
+  const { jobs, loading, error, fetchJobs } = useJobs();
+  const [selectedJob, setSelectedJob] = useState(null);
   const [searchTitle, setSearchTitle] = useState("");
   const [searchLocation, setSearchLocation] = useState("");
 
-  const filteredJobs = jobs
-    .filter(job =>
-      (job.titulo.toLowerCase().includes(searchTitle.toLowerCase()) ||
-        job.descricao.toLowerCase().includes(searchTitle.toLowerCase()))
-      &&
-      (job.local?.toLowerCase().includes(searchLocation.toLowerCase()) ||
-        (searchLocation.trim() === "" || (searchLocation.toLowerCase() === "remoto" && job.local?.toLowerCase().includes("remoto"))))
-    );
+  const handleSearch = () => {
+    fetchJobs({
+      searchTitle: searchTitle,
+      searchLocation: searchLocation,
+    });
+  };
 
-  // Seleciona a primeira vaga ao abrir ou filtrar
   useEffect(() => {
-    if (!selectedJob || !filteredJobs.find(j => j.id === selectedJob.id)) {
-      setSelectedJob(filteredJobs[0] || null);
+    if (jobs.length > 0) {
+      if (!selectedJob || !jobs.find(j => j.id === selectedJob.id)) {
+        setSelectedJob(jobs[0]);
+      }
+    } else if (jobs.length === 0) {
+      setSelectedJob(null);
     }
-  }, [filteredJobs]);
+  }, [jobs, selectedJob]);
 
   return (
     <Box sx={{
@@ -48,7 +50,7 @@ export default function Home() {
           {/* Coluna esquerda: filtros + lista de vagas */}
           <Box sx={{ flex: 1.5, maxWidth: 680 }}>
             <Typography variant="h5" sx={{ mb: 2, fontWeight: 700, color: "#222" }}>
-              Vagas em Aberto
+              {loading ? "Carregando..." : error ? "Erro ao carregar vagas" : `${jobs.length} vaga${jobs.length !== 1 ? 's' : ''} disponíveis`}
             </Typography>
             <Box
               sx={{
@@ -122,21 +124,30 @@ export default function Home() {
                   textTransform: "none",
                   fontSize: 16
                 }}
+                onClick={handleSearch}
               >
                 Find Job
               </Button>
             </Box>
             {/* Lista de vagas (cards, um embaixo do outro) */}
             <Box>
-              {filteredJobs.length === 0 ? (
+              {loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                  <CircularProgress />
+                </Box>
+              ) : error ? (
+                <Alert severity="error">{error}</Alert>
+              ) : jobs.length === 0 ? (
                 <Typography color="text.secondary" sx={{ mt: 4, ml: 2 }}>
                   Nenhuma vaga encontrada.
                 </Typography>
               ) : (
-                filteredJobs.map((job) => (
+                jobs.map((job) => (
                   <Card
                     key={job.id}
-                    onClick={() => setSelectedJob(job)}
+                    onClick={() => {
+                      setSelectedJob(job);
+                    }}
                     sx={{
                       minHeight: 130,
                       display: "flex",
@@ -215,9 +226,9 @@ export default function Home() {
                 alignItems: "flex-start",
                 justifyContent: "flex-start",
                 position: "sticky",
-                top: 140, // distância do topo ao rolar (ajuste para header)
-                maxHeight: "80vh", // limita altura máxima
-                overflowY: "auto", // permite scroll interno
+                top: 140,
+                maxHeight: "80vh",
+                overflowY: "auto",
                 zIndex: 3
               }}
             >
