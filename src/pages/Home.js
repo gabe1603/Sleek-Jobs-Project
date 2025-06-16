@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { jobs } from "../mock/jobs";
 import {
-  Container, Card, CardContent, Typography, Avatar, Box, Button, TextField, InputAdornment
+  Container, Card, CardContent, Typography, Avatar, Box, Button, TextField, InputAdornment, Chip
 } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -170,6 +170,25 @@ export default function Home() {
                         <Typography variant="body2" sx={{ color: "#17c3b2", fontWeight: 600 }}>
                           {job.salario}
                         </Typography>
+                        {job.skills && (
+                          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1, p: 0 }}>
+                            {job.skills.map(skill => (
+                              <Chip
+                                key={skill}
+                                label={skill}
+                                size="small"
+                                sx={{
+                                  background: "#ede7f6",
+                                  color: "#6610f2",
+                                  fontWeight: 600,
+                                  fontSize: 13,
+                                  borderRadius: 1
+                                }}
+                                onClick={e => e.stopPropagation()}
+                              />
+                            ))}
+                          </Box>
+                        )}
                       </Box>
                     </CardContent>
                   </Card>
@@ -197,7 +216,8 @@ export default function Home() {
                 justifyContent: "flex-start",
                 position: "sticky",
                 top: 140, // distância do topo ao rolar (ajuste para header)
-                height: "fit-content", // só cresce até o conteúdo
+                maxHeight: "80vh", // limita altura máxima
+                overflowY: "auto", // permite scroll interno
                 zIndex: 3
               }}
             >
@@ -219,8 +239,28 @@ export default function Home() {
                 </Box>
               </Box>
               <Typography sx={{ mt: 2, mb: 3, color: "#222", fontSize: 16 }}>
-                {selectedJob.descricao}
+                {selectedJob.resumo || "Descrição não disponível."}
               </Typography>
+              {selectedJob.responsabilidades && selectedJob.responsabilidades.length > 0 && (
+                <>
+                  <Typography sx={{ fontWeight: 700, mt: 3, mb: 1, color: "#6610f2" }}>Responsabilidades:</Typography>
+                  <ul style={{ paddingLeft: 20, marginBottom: 0 }}>
+                    {selectedJob.responsabilidades.map((item, idx) => (
+                      <li key={idx} style={{ marginBottom: 8 }}>{item}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              {selectedJob.requisitos && selectedJob.requisitos.length > 0 && (
+                <>
+                  <Typography sx={{ fontWeight: 700, mt: 3, mb: 1, color: "#6610f2" }}>Requisitos:</Typography>
+                  <ul style={{ paddingLeft: 20 }}>
+                    {selectedJob.requisitos.map((item, idx) => (
+                      <li key={idx} style={{ marginBottom: 8 }}>{item}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
               <Typography sx={{ mb: 2, color: "#888" }}>
                 Fecha em: {new Date(selectedJob.closeDate).toLocaleString()}
               </Typography>
