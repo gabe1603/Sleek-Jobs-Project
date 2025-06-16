@@ -5,13 +5,14 @@ import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 
 const theme = createTheme({
   palette: {
-    primary: {
-      main: "#5E35B1",
-    },
-    secondary: {
-      main: "#1DE9B6",
-    },
+    primary: { main: "#6610f2" },
+    secondary: { main: "#17c3b2" },
+    background: { default: "#f7f8fc" }
   },
+  typography: {
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif'
+  },
+  shape: { borderRadius: 12 }
 });
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

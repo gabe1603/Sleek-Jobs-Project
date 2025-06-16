@@ -1,5 +1,5 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
@@ -10,16 +10,25 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 
 function App() {
+  // Mock de autenticação (usar contexto futuramente)
+  const [isAuth, setIsAuth] = useState(false);
+
   return (
     <Router>
-      <Header />
+      <Header isAuth={isAuth} setIsAuth={setIsAuth} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/jobs/:id" element={<JobDetails />} />
         <Route path="/about" element={<About />} />
         <Route path="/stats" element={<Stats />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route
+          path="/login"
+          element={<Login setIsAuth={setIsAuth} />}
+        />
+        <Route
+          path="/dashboard"
+          element={isAuth ? <Dashboard /> : <Navigate to="/login" />}
+        />
       </Routes>
       <Footer />
     </Router>
