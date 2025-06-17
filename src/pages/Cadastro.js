@@ -32,16 +32,16 @@ export default function Cadastro() {
   const [showDialog, setShowDialog] = useState(false);
   const navigate = useNavigate();
 
-  // Validação dos campos
+  // Field validation
   const validate = () => {
     let temp = {};
-    temp.nome = form.nome ? "" : "Nome é obrigatório";
-    temp.email = /^\S+@\S+\.\S+$/.test(form.email) ? "" : "E-mail inválido";
-    temp.senha = form.senha.length >= 6 ? "" : "Senha deve ter pelo menos 6 caracteres";
-    temp.tipo = form.tipo ? "" : "Selecione uma opção";
+    temp.nome = form.nome ? "" : "Name is required.";
+    temp.email = /^\S+@\S+\.\S+$/.test(form.email) ? "" : "Invalid email address.";
+    temp.senha = form.senha.length >= 6 ? "" : "Password must be at least 6 characters long.";
+    temp.tipo = form.tipo ? "" : "Please select an option.";
     if (form.tipo === "empresa") {
-      temp.empresa = form.empresa ? "" : "Nome da empresa é obrigatório";
-      temp.cargo = form.cargo ? "" : "Cargo na empresa é obrigatório";
+      temp.empresa = form.empresa ? "" : "Company name is required.";
+      temp.cargo = form.cargo ? "" : "Job title at company is required.";
     }
     setErrors(temp);
     return Object.values(temp).every(x => x === "");
@@ -58,7 +58,7 @@ export default function Cadastro() {
       if (form.tipo === "candidato") {
         setShowDialog(true);
       } else {
-        // Redireciona para dashboard do empregador
+        // Redirect to employer dashboard
         navigate("/dashboard");
       }
     }
@@ -78,11 +78,11 @@ export default function Cadastro() {
       <Container maxWidth="sm">
         <Card sx={{ p: 4, borderRadius: 4, boxShadow: "0 8px 32px #0001" }}>
           <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, color: "#222" }}>
-            Cadastre-se
+            Sign Up
           </Typography>
           <form onSubmit={handleSubmit} noValidate>
             <TextField
-              label="Nome"
+              label="Name"
               name="nome"
               fullWidth
               margin="normal"
@@ -93,7 +93,7 @@ export default function Cadastro() {
               required
             />
             <TextField
-              label="E-mail"
+              label="Email"
               name="email"
               type="email"
               fullWidth
@@ -105,7 +105,7 @@ export default function Cadastro() {
               required
             />
             <TextField
-              label="Senha"
+              label="Password"
               name="senha"
               type="password"
               fullWidth
@@ -113,7 +113,7 @@ export default function Cadastro() {
               value={form.senha}
               onChange={handleChange}
               error={!!errors.senha}
-              helperText={errors.senha || "Mínimo 6 caracteres"}
+              helperText={errors.senha || "Minimum 6 characters"}
               required
             />
             <FormControl
@@ -124,7 +124,7 @@ export default function Cadastro() {
               sx={{ width: "100%", mt: 2 }}
             >
               <FormLabel component="legend" sx={{ fontWeight: 700, color: "#6610f2" }}>
-                Você está:
+                You are:
               </FormLabel>
               <RadioGroup
                 row
@@ -136,12 +136,12 @@ export default function Cadastro() {
                 <FormControlLabel
                   value="candidato"
                   control={<Radio color="primary" />}
-                  label="Procurando vagas"
+                  label="Looking for jobs"
                 />
                 <FormControlLabel
                   value="empresa"
                   control={<Radio color="primary" />}
-                  label="Ofertando vagas"
+                  label="Offering jobs"
                 />
               </RadioGroup>
               <FormHelperText>{errors.tipo}</FormHelperText>
@@ -149,7 +149,7 @@ export default function Cadastro() {
             {form.tipo === "empresa" && (
               <>
                 <TextField
-                  label="Nome da empresa"
+                  label="Company Name"
                   name="empresa"
                   fullWidth
                   margin="normal"
@@ -160,7 +160,7 @@ export default function Cadastro() {
                   required
                 />
                 <TextField
-                  label="Cargo na empresa"
+                  label="Job Title at Company"
                   name="cargo"
                   fullWidth
                   margin="normal"
@@ -179,31 +179,31 @@ export default function Cadastro() {
               fullWidth
               sx={{ mt: 2, fontWeight: 700 }}
             >
-              Cadastrar
+              Register
             </Button>
           </form>
           <Typography sx={{ mt: 3, textAlign: "center", fontSize: 15 }}>
-            Já tem uma conta?{" "}
+            Already have an account?{" "}
             <Link to="/login" style={{ color: "#6610f2", fontWeight: 700, textDecoration: "none" }}>
-              Faça login
+              Log in
             </Link>
           </Typography>
         </Card>
       </Container>
-      {/* Dialog para criar currículo */}
+      {/* Dialog for creating resume */}
       <Dialog open={showDialog} onClose={() => handleDialog("nao")}>
-        <DialogTitle sx={{ fontWeight: 700, color: "#6610f2" }}>Cadastro realizado!</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, color: "#6610f2" }}>Registration successful!</DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2 }}>
-            Deseja criar seu currículo agora?
+            Do you want to create your resume now?
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => handleDialog("nao")} color="inherit">
-            Não
+            No
           </Button>
           <Button onClick={() => handleDialog("sim")} variant="contained" color="primary" autoFocus>
-            Sim
+            Yes
           </Button>
         </DialogActions>
       </Dialog>

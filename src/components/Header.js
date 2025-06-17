@@ -34,7 +34,7 @@ export default function Header() {
         {/* Logo à esquerda */}
         <Box sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
           <Avatar
-            src="/logo.png"
+            src="/logo512.png"
             alt="Sleek Logo"
             sx={{
               width: 44,
@@ -70,20 +70,17 @@ export default function Header() {
                 mr: 1
               }}
             >
-              DASHBOARD
+              PROFILE
             </Button>
           )}
           <Button color="primary" component={Link} to="/" sx={{ fontWeight: 600, fontSize: 18 }}>
-            VAGAS
-          </Button>
-          <Button color="primary" component={Link} to="/empresas" sx={{ fontWeight: 600, fontSize: 18 }}>
-            EMPRESAS
+            JOBS
           </Button>
           <Button color="primary" component={Link} to="/stats" sx={{ fontWeight: 600, fontSize: 18 }}>
-            ESTATÍSTICAS
+            STATISTICS
           </Button>
           <Button color="primary" component={Link} to="/about" sx={{ fontWeight: 600, fontSize: 18 }}>
-            SOBRE
+            ABOUT
           </Button>
         </Box>
 
@@ -142,7 +139,7 @@ export default function Header() {
                   textTransform: 'none'
                 }}
               >
-                Cadastre-se
+                Sign Up
               </Button>
             </>
           )}

@@ -1,5 +1,4 @@
 import { jobs } from "../mock/jobs";
-import { empresas } from "../mock/empresas";
 import { validateJob } from "../models/Job";
 
 class JobServiceError extends Error {
@@ -13,57 +12,95 @@ class JobServiceError extends Error {
 const jobService = {
   getJobs: async (filters = {}) => {
     try {
+      console.log("JobService: Recebendo filtros", filters);
       return new Promise((resolve) => {
         setTimeout(() => {
           let filteredJobs = [...jobs];
 
           if (filters.searchTitle) {
+            console.log("JobService: Aplicando filtro por título", filters.searchTitle);
             const searchTerm = filters.searchTitle.toLowerCase();
             filteredJobs = filteredJobs.filter(job =>
               job.titulo.toLowerCase().includes(searchTerm) ||
-              (job.descricao && job.descricao.toLowerCase().includes(searchTerm))
+              (job.resumo && job.resumo.toLowerCase().includes(searchTerm))
             );
           }
 
           if (filters.searchLocation) {
+            console.log("JobService: Aplicando filtro por localização", filters.searchLocation);
             const searchLoc = filters.searchLocation.toLowerCase();
             filteredJobs = filteredJobs.filter(job =>
               job.local?.toLowerCase().includes(searchLoc) ||
-              (searchLoc.trim() === "" || (searchLoc.toLowerCase() === "remoto" && job.local?.toLowerCase().includes("remoto")))
+              (searchLoc.trim() === "" || (searchLoc.toLowerCase() === "remote" && job.local?.toLowerCase().includes("remote")))
             );
           }
 
           if (filters.modelo) {
+            console.log("JobService: Aplicando filtro por modelo", filters.modelo);
             filteredJobs = filteredJobs.filter(job => {
-              if (filters.modelo === "Presencial") return !/remoto|híbrido/i.test(job.local);
-              if (filters.modelo === "Remoto") return /remoto/i.test(job.local);
-              if (filters.modelo === "Híbrido") return /híbrido/i.test(job.local);
+              const jobLocation = job.local?.toLowerCase() || '';
+              const filterModel = filters.modelo.toLowerCase();
+              
+              if (filterModel === 'remote') return jobLocation.includes('remote');
+              if (filterModel === 'hybrid') return jobLocation.includes('hybrid');
+              if (filterModel === 'on-site') return !jobLocation.includes('remote') && !jobLocation.includes('hybrid');
               return true;
             });
           }
 
           if (filters.area) {
-            filteredJobs = filteredJobs.filter(job => job.area && job.area === filters.area);
+            console.log("JobService: Aplicando filtro por área", filters.area);
+            filteredJobs = filteredJobs.filter(job => job.area && job.area.toLowerCase() === filters.area.toLowerCase());
           }
 
           if (filters.contrato) {
-            filteredJobs = filteredJobs.filter(job => job.contrato && job.contrato === filters.contrato);
+            console.log("JobService: Aplicando filtro por contrato", filters.contrato);
+            filteredJobs = filteredJobs.filter(job => {
+              const jobText = `${job.titulo} ${job.resumo}`.toLowerCase();
+              const filterContrato = filters.contrato.toLowerCase();
+              
+              if (filterContrato === 'full-time') return jobText.includes('full-time') || jobText.includes('full time');
+              if (filterContrato === 'part-time') return jobText.includes('part-time') || jobText.includes('part time');
+              if (filterContrato === 'contract') return jobText.includes('contract') || jobText.includes('contractor');
+              if (filterContrato === 'internship') return jobText.includes('intern') || jobText.includes('internship');
+              return true;
+            });
           }
 
           if (filters.jornada) {
-            filteredJobs = filteredJobs.filter(job => job.jornada && job.jornada === filters.jornada);
+            console.log("JobService: Aplicando filtro por jornada", filters.jornada);
+            filteredJobs = filteredJobs.filter(job => {
+              const jobText = `${job.titulo} ${job.resumo}`.toLowerCase();
+              const filterJornada = filters.jornada.toLowerCase();
+              
+              if (filterJornada === 'full-time') return jobText.includes('full-time') || jobText.includes('full time');
+              if (filterJornada === 'part-time') return jobText.includes('part-time') || jobText.includes('part time');
+              return true;
+            });
           }
 
           if (filters.senioridade) {
-            filteredJobs = filteredJobs.filter(job => job.senioridade && job.senioridade === filters.senioridade);
+            console.log("JobService: Aplicando filtro por senioridade", filters.senioridade);
+            filteredJobs = filteredJobs.filter(job => {
+              const jobText = `${job.titulo} ${job.resumo}`.toLowerCase();
+              const filterSenioridade = filters.senioridade.toLowerCase();
+              
+              if (filterSenioridade === 'intern') return jobText.includes('intern') || jobText.includes('internship');
+              if (filterSenioridade === 'junior') return jobText.includes('junior');
+              if (filterSenioridade === 'mid-level') return jobText.includes('mid-level') || jobText.includes('mid level') || jobText.includes('intermediate');
+              if (filterSenioridade === 'senior') return jobText.includes('senior');
+              if (filterSenioridade === 'specialist') return jobText.includes('specialist') || jobText.includes('expert');
+              return true;
+            });
           }
 
-          if (filters.salario && (filters.salario[0] > 0 || filters.salario[1] < 25000)) {
+          console.log("JobService: Vagas filtradas", filteredJobs.length);
+          if (filters.salario && (filters.salario[0] > 0 || filters.salario[1] < 250000)) {
             filteredJobs = filteredJobs.filter(job => {
-              const match = job.salario?.match(/(\d+[.,]?\d*)/g);
+              const match = job.salario?.match(/AU\$ (\d{1,3}(?:,\d{3})*) - AU\$ (\d{1,3}(?:,\d{3})*)/);
               if (!match) return false;
-              const min = parseInt(match[0].replace(/\D/g, ""));
-              const max = match[1] ? parseInt(match[1].replace(/\D/g, "")) : min;
+              const min = parseInt(match[1].replace(/,/g, ""));
+              const max = parseInt(match[2].replace(/,/g, ""));
               return min <= filters.salario[1] && max >= filters.salario[0];
             });
           }
@@ -72,16 +109,17 @@ const jobService = {
             filteredJobs = filteredJobs.filter(job => job.status === filters.status);
           }
 
-          const jobsWithCompanyLogos = filteredJobs.map(job => {
-            const company = empresas.find(emp => emp.nome === job.empresa);
-            return { ...job, imagem: company ? company.logo : job.imagem };
-          });
+          // Todas as vagas são da Sleek Training, então atribuímos o logo padrão.
+          const jobsWithSleekLogo = filteredJobs.map(job => ({
+            ...job,
+            imagem: "/logo512.png" // Caminho corrigido para o logo da Sleek Training
+          }));
 
-          resolve(jobsWithCompanyLogos);
+          resolve(jobsWithSleekLogo);
         }, 300);
       });
     } catch (error) {
-      throw new JobServiceError('Erro ao buscar vagas', 'FETCH_ERROR');
+      throw new JobServiceError('Error fetching jobs', 'FETCH_ERROR');
     }
   },
 
@@ -91,8 +129,7 @@ const jobService = {
         setTimeout(() => {
           const job = jobs.find(j => j.id === Number(id));
           if (job) {
-            const company = empresas.find(emp => emp.nome === job.empresa);
-            resolve({ ...job, imagem: company ? company.logo : job.imagem });
+            resolve({ ...job, imagem: "/logo512.png" }); // Atribuir logo padrão também para vaga individual
           } else {
             reject(new JobServiceError("Vaga não encontrada.", "NOT_FOUND"));
           }

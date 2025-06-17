@@ -13,18 +13,18 @@ export default function JobDetails() {
     return () => { document.body.style.overflow = "auto"; };
   }, []);
 
-  if (!job) return <Container><Typography>Vaga não encontrada.</Typography></Container>;
+  if (!job) return <Container><Typography>Job not found.</Typography></Container>;
 
-  // Função para ativar scroll só no card
+  // Function to enable scroll only on card
   const handleCardClick = (e) => {
     e.stopPropagation();
     setScrollOnlyCard(true);
-    // Foca no card para acessibilidade
+    // Focus on card for accessibility
     if (cardRef.current) cardRef.current.focus();
-    // Impede scroll do body
+    // Prevent body scroll
     document.body.style.overflow = "hidden";
   };
-  // Função para liberar scroll global
+  // Function to enable global scroll
   const handleBgClick = () => {
     setScrollOnlyCard(false);
     document.body.style.overflow = "auto";
@@ -66,26 +66,26 @@ export default function JobDetails() {
             </Box>
           </Box>
           <Typography sx={{ mb: 2 }}>{job.resumo}</Typography>
-          <Typography sx={{ fontWeight: 700, mt: 3, mb: 1, color: "#6610f2" }}>Responsabilidades:</Typography>
+          <Typography sx={{ fontWeight: 700, mt: 3, mb: 1, color: "#6610f2" }}>Responsibilities:</Typography>
           <ul style={{ paddingLeft: 20, marginBottom: 0 }}>
             {job.responsabilidades.map((item, idx) => (
               <li key={idx} style={{ marginBottom: 8 }}>{item}</li>
             ))}
           </ul>
-          <Typography sx={{ fontWeight: 700, mt: 3, mb: 1, color: "#6610f2" }}>Requisitos:</Typography>
+          <Typography sx={{ fontWeight: 700, mt: 3, mb: 1, color: "#6610f2" }}>Requirements:</Typography>
           <ul style={{ paddingLeft: 20 }}>
             {job.requisitos.map((item, idx) => (
               <li key={idx} style={{ marginBottom: 8 }}>{item}</li>
             ))}
           </ul>
           <Typography sx={{ mb: 2 }} color="text.secondary">
-            Fecha em: {new Date(job.closeDate).toLocaleString()}
+            Closes on: {new Date(job.closeDate).toLocaleString()}
           </Typography>
           <Typography sx={{ mb: 2 }}>
-            Para candidatar-se: <a href={`mailto:${job.contato}`}>{job.contato}</a>
+            To apply: <a href={`mailto:${job.contato}`}>{job.contato}</a>
           </Typography>
           <Button component={Link} to="/" variant="outlined" color="primary">
-            Voltar
+            Back
           </Button>
         </Card>
       </Container>

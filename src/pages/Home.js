@@ -1,23 +1,55 @@
 import React, { useState, useEffect } from "react";
 import { useJobs } from "../controllers/useJobs";
 import {
-  Container, Card, CardContent, Typography, Avatar, Box, Button, TextField, InputAdornment, Chip, CircularProgress, Alert
+  Container, Card, CardContent, Typography, Avatar, Box, Button, TextField, InputAdornment, Chip, CircularProgress, Alert, Select, MenuItem, Slider, IconButton
 } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 
 export default function Home() {
   const { jobs, loading, error, fetchJobs } = useJobs();
   const [selectedJob, setSelectedJob] = useState(null);
   const [searchTitle, setSearchTitle] = useState("");
   const [searchLocation, setSearchLocation] = useState("");
+  const [filterModelo, setFilterModelo] = useState("");
+  const [filterSalario, setFilterSalario] = useState([0, 250000]);
+  const [filterArea, setFilterArea] = useState("");
+  const [filterContrato, setFilterContrato] = useState("");
+  const [filterJornada, setFilterJornada] = useState("");
+  const [filterSenioridade, setFilterSenioridade] = useState("");
 
   const handleSearch = () => {
-    fetchJobs({
+    console.log("handleSearch foi chamada!");
+    const filters = {
       searchTitle: searchTitle,
       searchLocation: searchLocation,
-    });
+      modelo: filterModelo === "" ? undefined : filterModelo,
+      salario: filterSalario,
+      area: filterArea === "" ? undefined : filterArea,
+      contrato: filterContrato === "" ? undefined : filterContrato,
+      jornada: filterJornada === "" ? undefined : filterJornada,
+      senioridade: filterSenioridade === "" ? undefined : filterSenioridade,
+    };
+    console.log('Home: Filtros sendo enviados para o serviço', filters);
+    fetchJobs(filters);
   };
+
+  const handleClearFilters = () => {
+    setSearchTitle("");
+    setSearchLocation("");
+    setFilterModelo("");
+    setFilterSalario([0, 250000]);
+    setFilterArea("");
+    setFilterContrato("");
+    setFilterJornada("");
+    setFilterSenioridade("");
+    fetchJobs(); // Recarrega todas as vagas sem filtros
+  };
+
+  useEffect(() => {
+    fetchJobs(); // Carrega todas as vagas na montagem inicial
+  }, []);
 
   useEffect(() => {
     if (jobs.length > 0) {
@@ -50,7 +82,7 @@ export default function Home() {
           {/* Coluna esquerda: filtros + lista de vagas */}
           <Box sx={{ flex: 1.5, maxWidth: 680 }}>
             <Typography variant="h5" sx={{ mb: 2, fontWeight: 700, color: "#222" }}>
-              {loading ? "Carregando..." : error ? "Erro ao carregar vagas" : `${jobs.length} vaga${jobs.length !== 1 ? 's' : ''} disponíveis`}
+              {loading ? "Loading..." : error ? "Error loading jobs" : `${jobs.length} job${jobs.length !== 1 ? 's' : ''} available`}
             </Typography>
             <Box
               sx={{
@@ -68,7 +100,10 @@ export default function Home() {
                 variant="outlined"
                 placeholder="Job title or keyword"
                 value={searchTitle}
-                onChange={e => setSearchTitle(e.target.value)}
+                onChange={e => {
+                  setSearchTitle(e.target.value);
+                  handleSearch();
+                }}
                 InputProps={{
                   startAdornment: (
                     <SearchIcon sx={{ color: "#96a0b5", mr: 1 }} />
@@ -91,7 +126,10 @@ export default function Home() {
                 variant="outlined"
                 placeholder="Location"
                 value={searchLocation}
-                onChange={e => setSearchLocation(e.target.value)}
+                onChange={e => {
+                  setSearchLocation(e.target.value);
+                  handleSearch();
+                }}
                 InputProps={{
                   startAdornment: (
                     <LocationOnIcon sx={{ color: "#96a0b5", mr: 1 }} />
@@ -129,7 +167,135 @@ export default function Home() {
                 Find Job
               </Button>
             </Box>
-            {/* Lista de vagas (cards, um embaixo do outro) */}
+
+            {/* Advanced Filters */}
+            <Box sx={{ mb: 4, background: "#fff", boxShadow: "0 2px 12px #0001", borderRadius: 2, p: 2, position: "relative" }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>Advanced Filters</Typography>
+              <IconButton
+                onClick={handleClearFilters}
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  color: "#96a0b5",
+                }}
+                aria-label="Clear Filters"
+              >
+                <CleaningServicesIcon />
+              </IconButton>
+
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 2 }}>
+                <Select
+                  value={filterModelo}
+                  onChange={e => {
+                    setFilterModelo(e.target.value);
+                    handleSearch();
+                  }}
+                  displayEmpty
+                  inputProps={{ 'aria-label': 'All Work Models' }}
+                  sx={{ flex: 1, minWidth: 150 }}
+                >
+                  <MenuItem value="">All Work Models</MenuItem>
+                  <MenuItem value="On-site">On-site</MenuItem>
+                  <MenuItem value="Remote">Remote</MenuItem>
+                  <MenuItem value="Hybrid">Hybrid</MenuItem>
+                </Select>
+
+                <Select
+                  value={filterArea}
+                  onChange={e => {
+                    setFilterArea(e.target.value);
+                    handleSearch();
+                  }}
+                  displayEmpty
+                  inputProps={{ 'aria-label': 'All Areas' }}
+                  sx={{ flex: 1, minWidth: 150 }}
+                >
+                  <MenuItem value="">All Areas</MenuItem>
+                  <MenuItem value="IT">IT</MenuItem>
+                  <MenuItem value="Design">Design</MenuItem>
+                  <MenuItem value="Analytics">Analytics</MenuItem>
+                  <MenuItem value="Infrastructure">Infrastructure</MenuItem>
+                  <MenuItem value="QA">QA</MenuItem>
+                  <MenuItem value="Mobile">Mobile</MenuItem>
+                  <MenuItem value="Management">Management</MenuItem>
+                  <MenuItem value="Support">Support</MenuItem>
+                  <MenuItem value="Data">Data</MenuItem>
+                  <MenuItem value="Artificial Intelligence">Artificial Intelligence</MenuItem>
+                  <MenuItem value="Security">Security</MenuItem>
+                </Select>
+
+                <Select
+                  value={filterContrato}
+                  onChange={e => {
+                    setFilterContrato(e.target.value);
+                    handleSearch();
+                  }}
+                  displayEmpty
+                  inputProps={{ 'aria-label': 'All Contracts' }}
+                  sx={{ flex: 1, minWidth: 150 }}
+                >
+                  <MenuItem value="">All Contracts</MenuItem>
+                  <MenuItem value="Full-time">Full-time</MenuItem>
+                  <MenuItem value="Part-time">Part-time</MenuItem>
+                  <MenuItem value="Contract">Contract</MenuItem>
+                  <MenuItem value="Internship">Internship</MenuItem>
+                </Select>
+
+                <Select
+                  value={filterJornada}
+                  onChange={e => {
+                    setFilterJornada(e.target.value);
+                    handleSearch();
+                  }}
+                  displayEmpty
+                  inputProps={{ 'aria-label': 'All Work Schedules' }}
+                  sx={{ flex: 1, minWidth: 150 }}
+                >
+                  <MenuItem value="">All Work Schedules</MenuItem>
+                  <MenuItem value="Full-time">Full-time</MenuItem>
+                  <MenuItem value="Part-time">Part-time</MenuItem>
+                </Select>
+
+                <Select
+                  value={filterSenioridade}
+                  onChange={e => {
+                    setFilterSenioridade(e.target.value);
+                    handleSearch();
+                  }}
+                  displayEmpty
+                  inputProps={{ 'aria-label': 'All Seniorities' }}
+                  sx={{ flex: 1, minWidth: 150 }}
+                >
+                  <MenuItem value="">All Seniorities</MenuItem>
+                  <MenuItem value="Intern">Intern</MenuItem>
+                  <MenuItem value="Junior">Junior</MenuItem>
+                  <MenuItem value="Mid-level">Mid-level</MenuItem>
+                  <MenuItem value="Senior">Senior</MenuItem>
+                  <MenuItem value="Specialist">Specialist</MenuItem>
+                </Select>
+
+                <Box sx={{ flex: 1, minWidth: 150 }}>
+                  <Typography gutterBottom sx={{ fontSize: 12, color: "#888", mb: 0.5 }}>Salary: AU${filterSalario[0].toLocaleString()} - AU${filterSalario[1].toLocaleString()}</Typography>
+                  <Slider
+                    value={filterSalario}
+                    onChange={(e, newValue) => {
+                      setFilterSalario(newValue);
+                      handleSearch();
+                    }}
+                    valueLabelDisplay="off"
+                    min={0}
+                    max={250000}
+                    step={1000}
+                    sx={{ width: '95%', mx: 'auto' }}
+                  />
+                </Box>
+
+              </Box>
+              
+            </Box>
+
+            {/* Job list (cards, one below the other) */}
             <Box>
               {loading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
@@ -139,7 +305,7 @@ export default function Home() {
                 <Alert severity="error">{error}</Alert>
               ) : jobs.length === 0 ? (
                 <Typography color="text.secondary" sx={{ mt: 4, ml: 2 }}>
-                  Nenhuma vaga encontrada.
+                  No jobs found.
                 </Typography>
               ) : (
                 jobs.map((job) => (
@@ -208,7 +374,7 @@ export default function Home() {
             </Box>
           </Box>
 
-          {/* Coluna direita: painel de detalhes */}
+          {/* Right column: details panel */}
           {selectedJob && (
             <Box
               sx={{
@@ -250,11 +416,11 @@ export default function Home() {
                 </Box>
               </Box>
               <Typography sx={{ mt: 2, mb: 3, color: "#222", fontSize: 16 }}>
-                {selectedJob.resumo || "Descrição não disponível."}
+                {selectedJob.resumo || "Description not available."}
               </Typography>
               {selectedJob.responsabilidades && selectedJob.responsabilidades.length > 0 && (
                 <>
-                  <Typography sx={{ fontWeight: 700, mt: 3, mb: 1, color: "#6610f2" }}>Responsabilidades:</Typography>
+                  <Typography sx={{ fontWeight: 700, mt: 3, mb: 1, color: "#6610f2" }}>Responsibilities:</Typography>
                   <ul style={{ paddingLeft: 20, marginBottom: 0 }}>
                     {selectedJob.responsabilidades.map((item, idx) => (
                       <li key={idx} style={{ marginBottom: 8 }}>{item}</li>
@@ -264,7 +430,7 @@ export default function Home() {
               )}
               {selectedJob.requisitos && selectedJob.requisitos.length > 0 && (
                 <>
-                  <Typography sx={{ fontWeight: 700, mt: 3, mb: 1, color: "#6610f2" }}>Requisitos:</Typography>
+                  <Typography sx={{ fontWeight: 700, mt: 3, mb: 1, color: "#6610f2" }}>Requirements:</Typography>
                   <ul style={{ paddingLeft: 20 }}>
                     {selectedJob.requisitos.map((item, idx) => (
                       <li key={idx} style={{ marginBottom: 8 }}>{item}</li>
@@ -273,7 +439,7 @@ export default function Home() {
                 </>
               )}
               <Typography sx={{ mb: 2, color: "#888" }}>
-                Fecha em: {new Date(selectedJob.closeDate).toLocaleString()}
+                Closes on: {new Date(selectedJob.closeDate).toLocaleString()}
               </Typography>
               <Button
                 href={`mailto:${selectedJob.contato}`}
@@ -290,7 +456,7 @@ export default function Home() {
                   boxShadow: "0 2px 12px #6610f224"
                 }}
               >
-                CANDIDATAR-ME
+                APPLY NOW
               </Button>
             </Box>
           )}

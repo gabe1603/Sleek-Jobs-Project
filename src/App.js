@@ -10,7 +10,6 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Cadastro from "./pages/Cadastro";
 import DashboardCandidato from "./pages/DashboardCandidato";
-import Empresas from "./pages/Empresas";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -26,7 +25,6 @@ function App() {
           <Route path="/stats" element={<Stats />} />
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
-          <Route path="/empresas" element={<Empresas />} />
 
           <Route
             path="/dashboard"

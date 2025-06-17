@@ -15,14 +15,14 @@ export default function Stats() {
     }}>
       <Container maxWidth="md">
         <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, color: "#222" }}>
-          Estatísticas
+          Statistics
         </Typography>
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
             <Card>
               <CardContent>
                 <Typography color="primary" variant="h5">{openJobs}</Typography>
-                <Typography>Vagas em aberto</Typography>
+                <Typography>Open Jobs</Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -30,7 +30,7 @@ export default function Stats() {
             <Card>
               <CardContent>
                 <Typography color="primary" variant="h5">{closedJobs}</Typography>
-                <Typography>Vagas fechadas</Typography>
+                <Typography>Closed Jobs</Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -38,7 +38,7 @@ export default function Stats() {
             <Card>
               <CardContent>
                 <Typography color="primary" variant="h5">{totalJobs}</Typography>
-                <Typography>Total de vagas</Typography>
+                <Typography>Total Jobs</Typography>
               </CardContent>
             </Card>
           </Grid>

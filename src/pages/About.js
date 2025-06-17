@@ -10,11 +10,11 @@ export default function About() {
     }}>
       <Container maxWidth="md">
         <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, color: "#222" }}>
-          Sobre a Sleek Training
+          About Sleek Training
         </Typography>
         <Typography sx={{ color: "#444", fontSize: 18, maxWidth: 700 }}>
-          A Sleek Training conecta talentos em tecnologia com as melhores oportunidades do mercado.
-          Democratizamos o acesso às vagas e facilitamos o contato entre empresas e profissionais de excelência.
+          Sleek Training connects tech talent with the best market opportunities.
+          We democratize access to jobs and facilitate contact between companies and excellent professionals.
         </Typography>
       </Container>
     </Box>

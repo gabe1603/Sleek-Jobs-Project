@@ -25,7 +25,7 @@ export default function Login() {
       const result = await login(form.email, form.senha);
       console.log(result)
       if (result.success) {
-        setWelcome(`Bem-vindo(a), ${result.user.nome}!`);
+        setWelcome(`Welcome, ${result.user.nome}!`);
         if (result.user.tipo === "empregador") {
           navigate("/");
         } else if (result.user.tipo === "candidato") {
@@ -37,7 +37,7 @@ export default function Login() {
         setError(result.error);
       }
     } catch (err) {
-      setError("Ocorreu um erro inesperado ao tentar fazer login.");
+      setError("An unexpected error occurred during login.");
       console.error(err);
     } finally {
       setLoading(false);
@@ -51,7 +51,7 @@ export default function Login() {
           <Typography variant="h4" gutterBottom>Login</Typography>
           <form onSubmit={handleLogin}>
             <TextField
-              label="E-mail"
+              label="Email"
               name="email"
               type="email"
               fullWidth
@@ -62,7 +62,7 @@ export default function Login() {
               autoFocus
             />
             <TextField
-              label="Senha"
+              label="Password"
               name="senha"
               type="password"
               fullWidth
@@ -79,15 +79,15 @@ export default function Login() {
               sx={{ mt: 2, fontWeight: 700 }}
               disabled={loading}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : "Entrar"}
+              {loading ? <CircularProgress size={24} color="inherit" /> : "Login"}
             </Button>
           </form>
           {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
           {welcome && <Alert severity="success" sx={{ mt: 2 }}>{welcome}</Alert>}
           <Typography sx={{ mt: 3, textAlign: 'center', fontSize: 15 }}>
-            Não tem uma conta?{" "}
+            Don't have an account?{" "}
             <Link to="/cadastro" style={{ color: '#6610f2', fontWeight: 700, textDecoration: 'none' }}>
-              Cadastre-se
+              Sign Up
             </Link>
           </Typography>
         </Card>
