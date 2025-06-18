@@ -80,7 +80,7 @@ export default function Header() {
             STATISTICS
           </Button>
           <Button color="primary" component={Link} to="/about" sx={{ fontWeight: 600, fontSize: 18 }}>
-            ABOUT
+            ABOUT US
           </Button>
         </Box>
 
