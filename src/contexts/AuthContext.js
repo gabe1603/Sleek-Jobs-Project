@@ -5,28 +5,53 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [isAuth, setIsAuth] = useState(false);
+  const [userId, setUserId] = useState("");
   const [userName, setUserName] = useState("");
   const [userType, setUserType] = useState("");
+  const [companyId, setCompanyId] = useState(null);
   const [empresasIds, setEmpresasIds] = useState([]);
+  const [isMockUser, setIsMockUser] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const storedIsAuth = localStorage.getItem("isAuth") === "true";
+    const token = localStorage.getItem("jwt");
+    const storedIsAuth = !!token;
+    const storedUserId = localStorage.getItem("userId") || "";
     const storedUserName = localStorage.getItem("userName") || "";
     const storedUserType = localStorage.getItem("userType") || "";
+    const storedCompanyId = localStorage.getItem("companyId") || null;
     const storedEmpresasIds = JSON.parse(localStorage.getItem("empresasIds") || "[]");
+    const storedIsMockUser = localStorage.getItem("isMockUser") === "true";
+    const storedUser = localStorage.getItem("user");
 
     setIsAuth(storedIsAuth);
+    setUserId(storedUserId);
     setUserName(storedUserName);
     setUserType(storedUserType);
+    setCompanyId(storedCompanyId);
     setEmpresasIds(storedEmpresasIds);
+    setIsMockUser(storedIsMockUser);
+    setUser(storedUser ? JSON.parse(storedUser) : null);
   }, []);
 
   const login = async (email, senha) => {
     try {
       const user = await authService.login(email, senha);
       setIsAuth(true);
-      setUserName(user.nome);
-      setUserType(user.tipo);
+      setUserId(user.id || "");
+      setUserName(user.name || user.nome);
+      setUserType(user.role || user.type || user.tipo);
+      setCompanyId(user.companyId || null);
+      setUser(user);
+      const mock = user.email && user.email.includes('@mock');
+      setIsMockUser(mock);
+      localStorage.setItem("isAuth", "true");
+      localStorage.setItem("userId", user.id || "");
+      localStorage.setItem("userName", user.name || user.nome);
+      localStorage.setItem("userType", user.role || user.type || user.tipo);
+      localStorage.setItem("companyId", user.companyId || '');
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("isMockUser", mock ? "true" : "false");
       if (user.tipo === "empregador") {
         setEmpresasIds(user.empresas || []);
         localStorage.setItem("empresasIds", JSON.stringify(user.empresas || []));
@@ -34,9 +59,10 @@ export const AuthProvider = ({ children }) => {
         setEmpresasIds([]);
         localStorage.removeItem("empresasIds");
       }
-      localStorage.setItem("isAuth", "true");
-      localStorage.setItem("userName", user.nome);
-      localStorage.setItem("userType", user.tipo);
+      if (user.jwt) {
+        localStorage.setItem('jwt', user.jwt);
+        setIsAuth(true);
+      }
       return { success: true, user };
     } catch (error) {
       console.error("Erro no login:", error.message);
@@ -47,9 +73,15 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     authService.logout();
     setIsAuth(false);
+    setUserId("");
     setUserName("");
     setUserType("");
+    setCompanyId(null);
     setEmpresasIds([]);
+    setIsMockUser(false);
+    setUser(null);
+    localStorage.clear();
+    localStorage.removeItem('jwt');
   };
 
   const register = async (userData) => {
@@ -65,15 +97,21 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{
       isAuth,
+      userId,
       userName,
       userType,
+      companyId,
       empresasIds,
+      isMockUser,
+      user,
       login,
       logout,
       register,
-      setIsAuth, // Expose setters if needed for external updates
+      setIsAuth,
+      setUserId,
       setUserName,
       setUserType,
+      setCompanyId,
       setEmpresasIds
     }}>
       {children}
@@ -87,4 +125,21 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}; 
+};
+
+function parseJwt(token) {
+  if (!token) return {};
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return {};
+  }
+} 

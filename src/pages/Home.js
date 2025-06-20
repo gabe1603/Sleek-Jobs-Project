@@ -333,38 +333,30 @@ export default function Home() {
                     }}
                   >
                     <CardContent sx={{ display: "flex", alignItems: "center", width: "100%", py: 2 }}>
-                      <Avatar src={job.imagem} sx={{ mr: 3, width: 56, height: 56, border: "2px solid #17c3b2" }} />
+                      <Avatar src={job.image} sx={{ mr: 3, width: 56, height: 56, border: "2px solid #17c3b2" }} />
                       <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                          {job.titulo}
+                        <Typography variant="h6">{job.title}</Typography>
+                        <Typography>{job.company?.name}</Typography>
+                        <Typography>{job.location}</Typography>
+                        <Typography>
+                          {job.salaryMin && job.salaryMax ? `AU$ ${job.salaryMin.toLocaleString()} - AU$ ${job.salaryMax.toLocaleString()}` : 'Salary not informed'}
                         </Typography>
-                        <Typography variant="body2" sx={{ color: "#6610f2", fontWeight: 500 }}>
-                          {job.empresa}
+                        <Typography>
+                          {job.description || 'Description not available.'}
                         </Typography>
-                        <Typography variant="body2" sx={{ color: "#888" }}>
-                          {job.local}
+                        <Typography>
+                          Tipo: {(() => {
+                            switch (job.type) {
+                              case 'FULL_TIME': return 'Full time';
+                              case 'PART_TIME': return 'Part time';
+                              case 'INTERNSHIP': return 'Internship';
+                              case 'CONTRACT': return 'Contract';
+                              default: return job.type || 'N/A';
+                            }
+                          })()}
                         </Typography>
-                        <Typography variant="body2" sx={{ color: "#17c3b2", fontWeight: 600 }}>
-                          {job.salario}
-                        </Typography>
-                        {job.skills && (
-                          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1, p: 0 }}>
-                            {job.skills.map(skill => (
-                              <Chip
-                                key={skill}
-                                label={skill}
-                                size="small"
-                                sx={{
-                                  background: "#ede7f6",
-                                  color: "#6610f2",
-                                  fontWeight: 600,
-                                  fontSize: 13,
-                                  borderRadius: 1
-                                }}
-                                onClick={e => e.stopPropagation()}
-                              />
-                            ))}
-                          </Box>
+                        {Array.isArray(job.skills) && job.skills.map(skill =>
+                          <Chip key={skill.id || skill.name} label={skill.name} sx={{ mr: 0.5, mb: 0.5 }} />
                         )}
                       </Box>
                     </CardContent>
@@ -399,47 +391,55 @@ export default function Home() {
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", mb: 2, width: "100%" }}>
-                <Avatar src={selectedJob.imagem} sx={{ width: 60, height: 60, mr: 2, border: "2px solid #17c3b2" }} />
+                <Avatar src={selectedJob.image} sx={{ width: 60, height: 60, mr: 2, border: "2px solid #17c3b2" }} />
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    {selectedJob.titulo}
+                    {selectedJob.title}
                   </Typography>
                   <Typography variant="body2" sx={{ color: "#6610f2", fontWeight: 500 }}>
-                    {selectedJob.empresa}
+                    {selectedJob.company?.name}
                   </Typography>
                   <Typography variant="body2" sx={{ color: "#888" }}>
-                    {selectedJob.local}
+                    {selectedJob.location}
                   </Typography>
                   <Typography variant="body2" sx={{ color: "#17c3b2", fontWeight: 600 }}>
-                    {selectedJob.salario}
+                    {selectedJob.salaryMin && selectedJob.salaryMax ? `AU$ ${selectedJob.salaryMin.toLocaleString()} - AU$ ${selectedJob.salaryMax.toLocaleString()}` : 'Salary not informed'}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#888" }}>
+                    Tipo: {(() => {
+                      switch (selectedJob.type) {
+                        case 'FULL_TIME': return 'Full time';
+                        case 'PART_TIME': return 'Part time';
+                        case 'INTERNSHIP': return 'Internship';
+                        case 'CONTRACT': return 'Contract';
+                        default: return selectedJob.type || 'N/A';
+                      }
+                    })()}
                   </Typography>
                 </Box>
               </Box>
               <Typography sx={{ mt: 2, mb: 3, color: "#222", fontSize: 16 }}>
-                {selectedJob.resumo || "Description not available."}
+                {selectedJob.description || "Description not available."}
               </Typography>
-              {selectedJob.responsabilidades && selectedJob.responsabilidades.length > 0 && (
-                <>
-                  <Typography sx={{ fontWeight: 700, mt: 3, mb: 1, color: "#6610f2" }}>Responsibilities:</Typography>
-                  <ul style={{ paddingLeft: 20, marginBottom: 0 }}>
-                    {selectedJob.responsabilidades.map((item, idx) => (
-                      <li key={idx} style={{ marginBottom: 8 }}>{item}</li>
-                    ))}
-                  </ul>
-                </>
-              )}
-              {selectedJob.requisitos && selectedJob.requisitos.length > 0 && (
+              {selectedJob.requirements && selectedJob.requirements.length > 0 && (
                 <>
                   <Typography sx={{ fontWeight: 700, mt: 3, mb: 1, color: "#6610f2" }}>Requirements:</Typography>
-                  <ul style={{ paddingLeft: 20 }}>
-                    {selectedJob.requisitos.map((item, idx) => (
+                  <ul style={{ paddingLeft: 20, marginBottom: 0 }}>
+                    {selectedJob.requirements.map((item, idx) => (
                       <li key={idx} style={{ marginBottom: 8 }}>{item}</li>
                     ))}
                   </ul>
                 </>
               )}
+              {Array.isArray(selectedJob.skills) && selectedJob.skills.length > 0 && (
+                <Box sx={{ mt: 2, mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {selectedJob.skills.map(skill => (
+                    <Chip key={skill.id || skill.name} label={skill.name} color="primary" />
+                  ))}
+                </Box>
+              )}
               <Typography sx={{ mb: 2, color: "#888" }}>
-                Closes on: {new Date(selectedJob.closeDate).toLocaleString()}
+                Closes on: {selectedJob.closeDate ? new Date(selectedJob.closeDate).toLocaleString() : 'Not available'}
               </Typography>
               <Button
                 href={`mailto:${selectedJob.contato}`}

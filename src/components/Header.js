@@ -7,10 +7,14 @@ export default function Header() {
   const navigate = useNavigate();
   const { isAuth, userType, logout } = useAuth();
 
-  let dashboardRoute = "";
+  console.log('HEADER: isAuth:', isAuth, 'userType:', userType);
+
+  let dashboardRoute = "/dashboard";
   if (isAuth) {
-    if (userType === "empregador") dashboardRoute = "/dashboard-empregador";
-    else if (userType === "candidato") dashboardRoute = "/dashboard-candidato";
+    if (userType === "COMPANY") dashboardRoute = "/dashboard-empregador";
+    else if (userType === "CANDIDATE") dashboardRoute = "/dashboard-candidato";
+    else if (userType === "ADMIN") dashboardRoute = "/dashboard-admin";
+    // fallback: /dashboard
   }
 
   const handleLogout = () => {
@@ -59,7 +63,7 @@ export default function Header() {
           alignItems: 'center',
           gap: 3,
         }}>
-          {isAuth && dashboardRoute && (
+          {isAuth && (
             <Button
               color="primary"
               component={Link}

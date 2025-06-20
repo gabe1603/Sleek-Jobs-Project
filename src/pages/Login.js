@@ -33,7 +33,7 @@ export default function Login() {
         } else {
           navigate("/");
         }
-      } else {
+    } else {
         setError(result.error);
       }
     } catch (err) {

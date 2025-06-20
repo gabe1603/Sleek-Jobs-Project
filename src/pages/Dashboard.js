@@ -1,61 +1,50 @@
 import React, { useState } from "react";
-import { Container, Typography, Box, Card, Button, Avatar, TextField, Dialog, DialogActions, DialogContent, DialogTitle, Chip, Grid, Stack, Badge } from "@mui/material";
+import { Container, Typography, Box, Card, Button, Avatar, TextField, Dialog, DialogActions, DialogContent, DialogTitle, Chip, Grid, Stack, Badge, CircularProgress } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 import GroupIcon from '@mui/icons-material/Group';
 import WorkIcon from '@mui/icons-material/Work';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-
-import { jobs as mockJobs } from "../mock/jobs";
-
-// Mock de dados do empregador
-const employerMock = {
-  name: "Lucas Employer",
-  email: "employer@company.com.au",
-  company: "Sleek Training",
-  abn: "12 345 678 901",
-  role: "Tech Lead",
-  logo: "https://randomuser.me/api/portraits/men/45.jpg"
-};
+import { useEmployerController } from "../controllers/useEmployerController";
 
 export default function Dashboard() {
-  // Simula que o empregador logado é sempre "Sleek Training"
-  const employer = employerMock.company;
-  const [jobs, setJobs] = useState(mockJobs.filter(j => j.empresa === employer));
-  const [open, setOpen] = useState(false);
-  const [openEdit, setOpenEdit] = useState(false);
-  const [newJob, setNewJob] = useState({
-    titulo: "",
-    salario: "",
-    closeDate: "",
-    descricao: "",
-    imagem: "",
-    contato: ""
-  });
+  const {
+    employer,
+    jobs,
+    jobsCreated,
+    openJobs,
+    applicantsReceived,
+    handleRemove,
+    handleOpen,
+    handleClose,
+    handleCreate,
+    open,
+    openEdit,
+    setOpenEdit,
+    newJob,
+    setNewJob,
+    loading,
+    fetchApplicantDetails,
+    applicantsDetails,
+    loadingApplicants
+  } = useEmployerController();
 
-  // Estatísticas mock
-  const jobsCreated = jobs.length;
-  const openJobs = jobs.filter(j => new Date(j.closeDate) > new Date()).length;
-  const applicantsReceived = jobs.reduce((acc, job) => acc + (job.candidatos || Math.floor(Math.random() * 12 + 1)), 0);
+  const [openApplicants, setOpenApplicants] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
 
-  // Simple CRUD (mock)
-  const handleRemove = id => setJobs(jobs.filter(j => j.id !== id));
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => {
-    setOpen(false);
-    setNewJob({ titulo: "", salario: "", closeDate: "", descricao: "", imagem: "", contato: "" });
+  const handleViewApplicants = (job) => {
+    setSelectedJob(job);
+    fetchApplicantDetails(job.applicants);
+    setOpenApplicants(true);
   };
-  const handleCreate = () => {
-    setJobs([
-      ...jobs,
-      {
-        ...newJob,
-        id: Date.now(),
-        empresa: employer
-      }
-    ]);
-    handleClose();
-  };
+
+  if (loading || !employer) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{
@@ -69,13 +58,13 @@ export default function Dashboard() {
           <Grid item xs={12} md={4}>
             <Card sx={{ p: 4, borderRadius: 5, boxShadow: "0 4px 24px #0001", bgcolor: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
               <Badge badgeContent={<Chip label="Employer" color="success" size="small" sx={{ fontWeight: 700, fontSize: 13, px: 1.5 }} />} overlap="circular" anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
-                <Avatar src={employerMock.logo} alt={employerMock.name} sx={{ width: 90, height: 90, mb: 2, border: '3px solid #6610f2' }} />
+                <Avatar src={employer?.logo} alt={employer?.name} sx={{ width: 90, height: 90, mb: 2, border: '3px solid #6610f2' }} />
               </Badge>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>{employerMock.name}</Typography>
-              <Typography sx={{ color: '#888', mb: 0.5 }}>{employerMock.role}</Typography>
-              <Typography sx={{ color: '#6610f2', fontWeight: 600, mb: 0.5 }}>{employerMock.company}</Typography>
-              <Typography sx={{ color: '#444', fontSize: 15, mb: 0.5 }}>{employerMock.email}</Typography>
-              <Typography sx={{ color: '#888', fontSize: 15, mb: 2 }}>ABN: {employerMock.abn}</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>{employer?.name}</Typography>
+              <Typography sx={{ color: '#888', mb: 0.5 }}>{employer?.role}</Typography>
+              <Typography sx={{ color: '#6610f2', fontWeight: 600, mb: 0.5 }}>{employer?.company}</Typography>
+              <Typography sx={{ color: '#444', fontSize: 15, mb: 0.5 }}>{employer?.email}</Typography>
+              <Typography sx={{ color: '#888', fontSize: 15, mb: 2 }}>ABN: {employer?.abn}</Typography>
               <Stack direction="row" spacing={2} sx={{ mb: 2, width: '100%', justifyContent: 'center' }}>
                 <Box sx={{ textAlign: 'center' }}>
                   <WorkIcon sx={{ color: '#6610f2', mb: 0.5 }} />
@@ -113,14 +102,17 @@ export default function Dashboard() {
                 {jobs.map(job => (
                   <Grid item xs={12} md={6} key={job.id}>
                     <Card sx={{ display: 'flex', alignItems: 'center', px: 3, py: 2, borderRadius: 4, background: '#fff', boxShadow: '0 4px 18px #0001', gap: 2 }}>
-                      <Avatar src={job.imagem} sx={{ width: 56, height: 56, mr: 2, border: '2px solid #17c3b2' }} />
+                      <Avatar src={job.image} sx={{ width: 56, height: 56, mr: 2, border: '2px solid #17c3b2' }} />
                       <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{job.titulo}</Typography>
-                        <Typography sx={{ color: '#6610f2', fontWeight: 500 }}>{job.salario}</Typography>
-                        <Typography sx={{ color: '#888', fontSize: 14 }}>Status: {new Date(job.closeDate) > new Date() ? 'Open' : 'Closed'}</Typography>
-                        <Typography sx={{ color: '#10B981', fontWeight: 600, fontSize: 14 }}>Applicants: {job.candidatos || Math.floor(Math.random() * 12 + 1)}</Typography>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{job.title}</Typography>
+                        <Typography sx={{ color: '#6610f2', fontWeight: 500 }}>
+                          {job.salaryMin && job.salaryMax ? `AU$ ${job.salaryMin.toLocaleString()} - AU$ ${job.salaryMax.toLocaleString()}` : 'Salário não informado'}
+                        </Typography>
+                        <Typography sx={{ color: '#888', fontSize: 14 }}>Status: Ativa</Typography>
+                        <Typography sx={{ color: '#10B981', fontWeight: 600, fontSize: 14 }}>Candidatos: {job.applicants?.length || 0}</Typography>
                       </Box>
-                      <Button variant="outlined" color="secondary" sx={{ borderRadius: 3, fontWeight: 600, textTransform: 'none', mr: 1 }}>
+                      <Button variant="outlined" color="secondary" sx={{ borderRadius: 3, fontWeight: 600, textTransform: 'none', mr: 1 }}
+                        onClick={() => handleViewApplicants(job)}>
                         View Applicants
                       </Button>
                       <Button onClick={() => handleRemove(job.id)} color="error" variant="outlined" sx={{ borderRadius: 3, fontWeight: 600, textTransform: 'none' }}>
@@ -164,6 +156,34 @@ export default function Dashboard() {
           <DialogActions>
             <Button onClick={handleClose}>Cancel</Button>
             <Button onClick={handleCreate} variant="contained">Create</Button>
+          </DialogActions>
+        </Dialog>
+        {/* Dialog for viewing applicants */}
+        <Dialog open={openApplicants} onClose={() => setOpenApplicants(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>Applicants for: {selectedJob?.title}</DialogTitle>
+          <DialogContent>
+            {loadingApplicants ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                <CircularProgress />
+              </Box>
+            ) : applicantsDetails.length === 0 ? (
+              <Typography color="text.secondary">No applicants for this job yet.</Typography>
+            ) : (
+              applicantsDetails.map(applicant => (
+                <Box key={applicant.id} sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 2 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{applicant.name || applicant.nome}</Typography>
+                  <Typography sx={{ color: '#888', fontSize: 15 }}>{applicant.email}</Typography>
+                  <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {Array.isArray(applicant.skills) && applicant.skills.map(skill => (
+                      <Chip key={skill.id || skill.name} label={skill.name} size="small" color="primary" />
+                    ))}
+                  </Box>
+                </Box>
+              ))
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenApplicants(false)}>Close</Button>
           </DialogActions>
         </Dialog>
       </Container>

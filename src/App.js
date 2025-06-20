@@ -12,6 +12,7 @@ import Cadastro from "./pages/Cadastro";
 import DashboardCandidato from "./pages/DashboardCandidato";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
+import DashboardAdmin from "./pages/DashboardAdmin";
 
 function App() {
   return (
@@ -27,17 +28,9 @@ function App() {
           <Route path="/cadastro" element={<Cadastro />} />
 
           <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute allowedUserTypes={["empregador"]}>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/dashboard-empregador"
             element={
-              <ProtectedRoute allowedUserTypes={["empregador"]}>
+              <ProtectedRoute allowedUserTypes={["COMPANY"]}>
                 <Dashboard />
               </ProtectedRoute>
             }
@@ -45,8 +38,16 @@ function App() {
           <Route
             path="/dashboard-candidato"
             element={
-              <ProtectedRoute allowedUserTypes={["candidato"]}>
+              <ProtectedRoute allowedUserTypes={["CANDIDATE"]}>
                 <DashboardCandidato />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard-admin"
+            element={
+              <ProtectedRoute allowedUserTypes={["ADMIN"]}>
+                <DashboardAdmin />
               </ProtectedRoute>
             }
           />
