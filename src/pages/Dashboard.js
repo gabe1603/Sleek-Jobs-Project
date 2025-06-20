@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container, Typography, Box, Card, Button, Avatar, TextField,
   Dialog, DialogActions, DialogContent, DialogTitle, Chip,
-  Stack, Badge, CircularProgress
+  Stack, Badge, CircularProgress, Alert, Select, MenuItem, InputLabel, FormControl, OutlinedInput, Checkbox, ListItemText
 } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
@@ -10,16 +10,27 @@ import GroupIcon from '@mui/icons-material/Group';
 import WorkIcon from '@mui/icons-material/Work';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useEmployerController } from "../controllers/useEmployerController";
+import { getAllSkills } from "../services/skillService";
+import { NumericFormat } from 'react-number-format';
 
 export default function Dashboard() {
   const {
     employer, jobs, jobsCreated, openJobs, applicantsReceived,
     handleRemove, handleOpen, handleClose, handleCreate, open, openEdit, setOpenEdit,
-    newJob, setNewJob, loading, fetchApplicantDetails, applicantsDetails, loadingApplicants
+    newJob, setNewJob, loading, fetchApplicantDetails, applicantsDetails, loadingApplicants,
+    createError, createSuccess, createLoading, editProfile, setEditProfile, editProfileLoading, editProfileError, editProfileSuccess, handleEditProfile, handleUploadAvatar, avatarLoading, avatarError, avatarSuccess,
+    jobToDelete, confirmDeleteJob, cancelDeleteJob, deleteLoading, deleteError, deleteSuccess
   } = useEmployerController();
 
   const [openApplicants, setOpenApplicants] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
+  const [skillsList, setSkillsList] = useState([]);
+
+  useEffect(() => {
+    if (open) {
+      getAllSkills().then(setSkillsList).catch(() => setSkillsList([]));
+    }
+  }, [open]);
 
   const handleViewApplicants = (job) => {
     setSelectedJob(job);
@@ -158,35 +169,150 @@ export default function Dashboard() {
 
       {/* Dialogs */}
       <Dialog open={openEdit} onClose={() => setOpenEdit(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Edit Profile (placeholder)</DialogTitle>
-        <DialogContent>
-          <Typography sx={{ mb: 2 }}>This is a placeholder for the employer profile editing form.</Typography>
-          <TextField fullWidth label="Name" sx={{ mb: 2 }} />
-          <TextField fullWidth label="Role" sx={{ mb: 2 }} />
-          <TextField fullWidth label="Company" sx={{ mb: 2 }} />
-          <TextField fullWidth label="Email" sx={{ mb: 2 }} />
-          <TextField fullWidth label="ABN" sx={{ mb: 2 }} />
+        <DialogTitle>Edit Profile</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pt: 3, pb: 2 }}>
+          <Avatar
+            src={employer?.avatar || employer?.logo}
+            alt={editProfile.name}
+            sx={{ width: 90, height: 90, mb: 2, border: '3px solid #6610f2' }}
+          />
+          <Button
+            variant="outlined"
+            sx={{ mb: 3 }}
+            component="label"
+            disabled={avatarLoading}
+          >
+            {avatarLoading ? 'Uploading...' : 'Change Avatar'}
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={e => {
+                if (e.target.files && e.target.files[0]) handleUploadAvatar(e.target.files[0]);
+              }}
+            />
+          </Button>
+          {avatarError && <Alert severity="error" sx={{ mb: 1, maxWidth: 400 }}>{avatarError}</Alert>}
+          {avatarSuccess && <Alert severity="success" sx={{ mb: 1, maxWidth: 400 }}>{avatarSuccess}</Alert>}
+          <TextField
+            fullWidth
+            label="Name"
+            sx={{ mb: 2, maxWidth: 400 }}
+            value={editProfile.name}
+            onChange={e => setEditProfile({ ...editProfile, name: e.target.value })}
+            disabled={editProfileLoading}
+          />
+          <TextField
+            fullWidth
+            label="Email"
+            sx={{ mb: 2, maxWidth: 400 }}
+            value={editProfile.email}
+            onChange={e => setEditProfile({ ...editProfile, email: e.target.value })}
+            disabled={editProfileLoading}
+          />
+          {employer?.role === 'COMPANY' && (
+            <TextField
+              fullWidth
+              label="ABN"
+              sx={{ mb: 2, maxWidth: 400 }}
+              value={editProfile.abn}
+              onChange={e => setEditProfile({ ...editProfile, abn: e.target.value })}
+              disabled={editProfileLoading}
+            />
+          )}
+          {editProfileError && <Alert severity="error" sx={{ mt: 2, maxWidth: 400 }}>{editProfileError}</Alert>}
+          {editProfileSuccess && <Alert severity="success" sx={{ mt: 2, maxWidth: 400 }}>{editProfileSuccess}</Alert>}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenEdit(false)}>Cancel</Button>
-          <Button variant="contained" disabled>Save</Button>
+        <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+          <Button onClick={() => setOpenEdit(false)} disabled={editProfileLoading}>Cancel</Button>
+          <Button onClick={handleEditProfile} variant="contained" disabled={editProfileLoading}>
+            {editProfileLoading ? "Saving..." : "Save"}
+          </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Create new job</DialogTitle>
         <DialogContent>
-          <TextField label="Title" fullWidth margin="normal" value={newJob.titulo} onChange={e => setNewJob({ ...newJob, titulo: e.target.value })} />
-          <TextField label="Salary" fullWidth margin="normal" value={newJob.salario} onChange={e => setNewJob({ ...newJob, salario: e.target.value })} />
+          <TextField label="Title" fullWidth margin="normal" value={newJob.title} onChange={e => setNewJob({ ...newJob, title: e.target.value })} />
+          <TextField label="Description" fullWidth multiline rows={3} margin="normal" value={newJob.description} onChange={e => setNewJob({ ...newJob, description: e.target.value })} />
+          <TextField
+            label="Minimum Salary Per Year"
+            fullWidth
+            margin="normal"
+            value={newJob.salaryMin}
+            onChange={e => setNewJob({ ...newJob, salaryMin: e.target.value })}
+            InputProps={{
+              inputComponent: NumberFormatCustom,
+            }}
+          />
+          <TextField
+            label="Maximum Salary Per Year"
+            fullWidth
+            margin="normal"
+            value={newJob.salaryMax}
+            onChange={e => setNewJob({ ...newJob, salaryMax: e.target.value })}
+            InputProps={{
+              inputComponent: NumberFormatCustom,
+            }}
+          />
           <TextField label="Closing Date" type="date" fullWidth margin="normal" InputLabelProps={{ shrink: true }} value={newJob.closeDate} onChange={e => setNewJob({ ...newJob, closeDate: e.target.value })} />
-          <TextField label="Description" fullWidth multiline rows={3} margin="normal" value={newJob.descricao} onChange={e => setNewJob({ ...newJob, descricao: e.target.value })} />
-          <TextField label="Image URL" fullWidth margin="normal" value={newJob.imagem} onChange={e => setNewJob({ ...newJob, imagem: e.target.value })} />
-          <TextField label="Contact" fullWidth margin="normal" value={newJob.contato} onChange={e => setNewJob({ ...newJob, contato: e.target.value })} />
+          <TextField label="Location (City, State or Remote)" fullWidth margin="normal" value={newJob.location} onChange={e => setNewJob({ ...newJob, location: e.target.value })} />
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="type-label">Type</InputLabel>
+            <Select
+              labelId="type-label"
+              value={newJob.type}
+              label="Type"
+              onChange={e => setNewJob({ ...newJob, type: e.target.value })}
+            >
+              <MenuItem value="Full time">Full time</MenuItem>
+              <MenuItem value="Part time">Part time</MenuItem>
+              <MenuItem value="Internship">Internship</MenuItem>
+              <MenuItem value="Contract">Contract</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="skills-label">Skills</InputLabel>
+            <Select
+              labelId="skills-label"
+              multiple
+              value={newJob.skills}
+              onChange={e => setNewJob({ ...newJob, skills: e.target.value })}
+              input={<OutlinedInput label="Skills" />}
+              renderValue={selected => skillsList.filter(s => selected.includes(s.id)).map(s => s.name).join(', ')}
+            >
+              {skillsList.map(skill => (
+                <MenuItem key={skill.id} value={skill.id}>
+                  <Checkbox checked={newJob.skills.indexOf(skill.id) > -1} />
+                  <ListItemText primary={skill.name} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Button
+            variant="outlined"
+            component="label"
+            sx={{ mt: 2, mb: 1 }}
+          >
+            {newJob.image ? newJob.image.name : "Select image"}
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={e => setNewJob({ ...newJob, image: e.target.files[0] })}
+            />
+          </Button>
+          {createError && <Alert severity="error" sx={{ mt: 2 }}>{createError}</Alert>}
+          {createSuccess && <Alert severity="success" sx={{ mt: 2 }}>{createSuccess}</Alert>}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleCreate} variant="contained">Create</Button>
-        </DialogActions>      </Dialog>
+          <Button onClick={handleClose} disabled={createLoading}>Cancel</Button>
+          <Button onClick={handleCreate} variant="contained" disabled={createLoading}>
+            {createLoading ? "Sending..." : "Create"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog open={openApplicants} onClose={() => setOpenApplicants(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Applicants for: {selectedJob?.title}</DialogTitle>
@@ -215,6 +341,38 @@ export default function Dashboard() {
           <Button onClick={() => setOpenApplicants(false)}>Close</Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog open={!!jobToDelete} onClose={cancelDeleteJob}>
+        <DialogTitle>Delete Job</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this job? This action cannot be undone.</Typography>
+          {deleteError && <Alert severity="error" sx={{ mt: 2 }}>{deleteError}</Alert>}
+          {deleteSuccess && <Alert severity="success" sx={{ mt: 2 }}>{deleteSuccess}</Alert>}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelDeleteJob} disabled={deleteLoading}>Cancel</Button>
+          <Button onClick={confirmDeleteJob} color="error" variant="contained" disabled={deleteLoading}>
+            {deleteLoading ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
+  );
+}
+
+function NumberFormatCustom(props) {
+  const { inputRef, onChange, ...other } = props;
+  return (
+    <NumericFormat
+      {...other}
+      getInputRef={inputRef}
+      onValueChange={(values) => {
+        onChange({ target: { value: values.value } });
+      }}
+      thousandSeparator="," decimalSeparator="."
+      allowNegative={false}
+      isNumericString
+      prefix="AU$ "
+    />
   );
 }

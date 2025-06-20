@@ -134,28 +134,30 @@ const jobService = {
     }
   },
 
-  createJob: async (jobData) => {
+  createJob: async ({ title, description, location, type, salaryMin, salaryMax, closeDate, skills, image }) => {
+    const token = localStorage.getItem('jwt');
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('description', description);
+    formData.append('location', location);
+    formData.append('type', type);
+    formData.append('salaryMin', salaryMin);
+    formData.append('salaryMax', salaryMax);
+    if (closeDate) formData.append('closeDate', closeDate);
+    if (Array.isArray(skills)) {
+      formData.append('skills', JSON.stringify(skills));
+    }
+    if (image) formData.append('image', image);
     try {
-      const { isValid, errors } = validateJob(jobData);
-      if (!isValid) {
-        throw new JobServiceError('Dados da vaga inválidos', 'VALIDATION_ERROR', errors);
-      }
-
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const newJob = {
-            ...jobData,
-            id: Math.max(...jobs.map(j => j.id)) + 1,
-            dataPublicacao: new Date().toISOString(),
-            status: 'ativo'
-          };
-          jobs.push(newJob);
-          resolve(newJob);
-        }, 300);
+      const response = await api.post('/jobs', formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
       });
+      return response.data;
     } catch (error) {
-      if (error instanceof JobServiceError) throw error;
-      throw new JobServiceError('Erro ao criar vaga', 'CREATE_ERROR');
+      throw error.response?.data?.message || 'Error creating job';
     }
   },
 
@@ -190,21 +192,16 @@ const jobService = {
   },
 
   deleteJob: async (id) => {
+    const token = localStorage.getItem('jwt');
     try {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          const index = jobs.findIndex(j => j.id === Number(id));
-          if (index === -1) {
-            reject(new JobServiceError("Vaga não encontrada.", "NOT_FOUND"));
-            return;
-          }
-
-          jobs.splice(index, 1);
-          resolve({ success: true });
-        }, 300);
+      const response = await api.delete(`/jobs/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
+      return response.data;
     } catch (error) {
-      throw new JobServiceError('Erro ao deletar vaga', 'DELETE_ERROR');
+      throw error.response?.data?.message || 'Error deleting job';
     }
   },
 
@@ -231,6 +228,73 @@ const jobService = {
     } catch (error) {
       console.error('Erro ao aplicar para vaga:', error);
       throw error;
+    }
+  },
+
+  updateUserProfile: async (userId, data) => {
+    const token = localStorage.getItem('jwt');
+    if (isMockUser()) {
+      // Atualiza mock local (opcional, pode ser só resolve)
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({ ...data, id: userId });
+        }, 400);
+      });
+    }
+    try {
+      const response = await api.patch(`/users/${userId}`, data, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Erro ao atualizar perfil';
+    }
+  },
+
+  uploadUserAvatar: async (userId, file) => {
+    const token = localStorage.getItem('jwt');
+    const formData = new FormData();
+    formData.append('avatar', file);
+    try {
+      const response = await api.post(`/users/${userId}/avatar`, formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Error uploading avatar';
+    }
+  },
+
+  registerUser: async ({ name, email, password, role }) => {
+    try {
+      const response = await api.post('/users/register', { name, email, password, role });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Error registering user';
+    }
+  },
+
+  createCompany: async ({ name, location, description, website, logo }) => {
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('location', location);
+    if (description) formData.append('description', description);
+    if (website) formData.append('website', website);
+    if (logo) formData.append('logo', logo);
+    try {
+      const response = await api.post('/companies', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Error creating company';
     }
   }
 };
