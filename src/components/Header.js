@@ -97,8 +97,8 @@ export default function Header() {
           gap: 2
         }}>
           {isAuth ? (
-            <Button
-              variant="contained"
+          <Button
+            variant="contained"
               color="primary"
               onClick={handleLogout}
               sx={{
@@ -115,13 +115,13 @@ export default function Header() {
           ) : (
             <>
               <Button
-                color="primary"
-                component={Link}
-                to="/login"
-                sx={{
+            color="primary"
+            component={Link}
+            to="/login"
+            sx={{
                   fontWeight: 700,
                   fontSize: 16,
-                  borderRadius: 8,
+              borderRadius: 8,
                   px: 2.5,
                   textTransform: 'none',
                   mr: { xs: 0, md: 1 }
@@ -135,16 +135,16 @@ export default function Header() {
                 component={Link}
                 to="/cadastro"
                 sx={{
-                  fontWeight: 700,
+              fontWeight: 700,
                   fontSize: 16,
                   borderRadius: 8,
-                  px: 2.5,
+              px: 2.5,
                   background: "linear-gradient(90deg,#6610f2,#17c3b2)",
                   textTransform: 'none'
-                }}
-              >
+            }}
+          >
                 Sign Up
-              </Button>
+          </Button>
             </>
           )}
         </Box>

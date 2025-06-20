@@ -40,7 +40,12 @@ export const AuthProvider = ({ children }) => {
       setIsAuth(true);
       setUserId(user.id || "");
       setUserName(user.name || user.nome);
-      setUserType(user.role || user.type || user.tipo);
+      setUserType(
+        user.role === 'admin' ? 'ADMIN' :
+        user.role === 'employer' ? 'COMPANY' :
+        user.role === 'student' ? 'CANDIDATE' :
+        user.role || user.type || user.tipo
+      );
       setCompanyId(user.companyId || null);
       setUser(user);
       const mock = user.email && user.email.includes('@mock');
@@ -48,7 +53,12 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("isAuth", "true");
       localStorage.setItem("userId", user.id || "");
       localStorage.setItem("userName", user.name || user.nome);
-      localStorage.setItem("userType", user.role || user.type || user.tipo);
+      localStorage.setItem("userType",
+        user.role === 'admin' ? 'ADMIN' :
+        user.role === 'employer' ? 'COMPANY' :
+        user.role === 'student' ? 'CANDIDATE' :
+        user.role || user.type || user.tipo
+      );
       localStorage.setItem("companyId", user.companyId || '');
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("isMockUser", mock ? "true" : "false");

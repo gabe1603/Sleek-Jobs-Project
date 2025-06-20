@@ -19,7 +19,7 @@ export default function JobCard({ job }) {
       }}
     >
       <Avatar
-        src={job.imagem}
+        src={job.image || job.imagem}
         alt={job.empresa}
         sx={{
           width: 90,

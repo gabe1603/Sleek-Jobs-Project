@@ -333,18 +333,15 @@ export default function Home() {
                     }}
                   >
                     <CardContent sx={{ display: "flex", alignItems: "center", width: "100%", py: 2 }}>
-                      <Avatar src={job.image} sx={{ mr: 3, width: 56, height: 56, border: "2px solid #17c3b2" }} />
+                      <Avatar src={`${process.env.REACT_APP_IMAGE_URL}${job.image}`} crossOrigin="anonymous" alt="logo" sx={{ mr: 3, width: 56, height: 56, border: "2px solid #17c3b2" }} />
                       <Box sx={{ flexGrow: 1 }}>
                         <Typography variant="h6">{job.title}</Typography>
-                        <Typography>{job.company?.name}</Typography>
-                        <Typography>{job.location}</Typography>
-                        <Typography>
+                        <Typography variant="body2" sx={{ color: "#6610f2", fontWeight: 500 }}>{job.company?.name}</Typography>
+                        <Typography variant="body2" sx={{ color: "#888" }}>{job.location}</Typography>
+                        <Typography variant="body2" sx={{ color: "#17c3b2", fontWeight: 600 }}>
                           {job.salaryMin && job.salaryMax ? `AU$ ${job.salaryMin.toLocaleString()} - AU$ ${job.salaryMax.toLocaleString()}` : 'Salary not informed'}
                         </Typography>
-                        <Typography>
-                          {job.description || 'Description not available.'}
-                        </Typography>
-                        <Typography>
+                        <Typography variant="body2" sx={{ color: "#888" }}>
                           Tipo: {(() => {
                             switch (job.type) {
                               case 'FULL_TIME': return 'Full time';
@@ -355,8 +352,12 @@ export default function Home() {
                             }
                           })()}
                         </Typography>
-                        {Array.isArray(job.skills) && job.skills.map(skill =>
-                          <Chip key={skill.id || skill.name} label={skill.name} sx={{ mr: 0.5, mb: 0.5 }} />
+                        {Array.isArray(job.skills) && job.skills.length > 0 && (
+                          <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                            {job.skills.map(skill => (
+                              <Chip key={skill.id || skill.name} label={skill.name} color="primary" />
+                            ))}
+                          </Box>
                         )}
                       </Box>
                     </CardContent>
@@ -391,7 +392,7 @@ export default function Home() {
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", mb: 2, width: "100%" }}>
-                <Avatar src={selectedJob.image} sx={{ width: 60, height: 60, mr: 2, border: "2px solid #17c3b2" }} />
+                <Avatar src={`${process.env.REACT_APP_IMAGE_URL}${selectedJob.image}`} crossOrigin="anonymous" alt="logo" sx={{ width: 60, height: 60, mr: 2, border: "2px solid #17c3b2" }} />
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
                     {selectedJob.title}
@@ -418,7 +419,7 @@ export default function Home() {
                   </Typography>
                 </Box>
               </Box>
-              <Typography sx={{ mt: 2, mb: 3, color: "#222", fontSize: 16 }}>
+              <Typography sx={{ mt: 2, mb: 3, color: "#222", fontSize: 15 , whiteSpace: 'pre-line', lineHeight: 1.6}}>
                 {selectedJob.description || "Description not available."}
               </Typography>
               {selectedJob.requirements && selectedJob.requirements.length > 0 && (

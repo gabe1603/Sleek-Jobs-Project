@@ -10,7 +10,6 @@ export default function Footer() {
         py: 2,
         textAlign: "center",
         borderTop: "1.5px solid #f2f2f2",
-        mt: 6
       }}
     >
       <Typography variant="body2">
